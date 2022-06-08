@@ -20,7 +20,8 @@ namespace global {
     SourceSDK::FactoryLoader engine_loader( "engine" );
 
     typedef void (* tBroadcastVoiceData ) ( IClient * , int , char * , int64  ) ;
-    static Symbol sym_BroadcastVoiceData = Symbol::FromName("_Z21SV_BroadcastVoiceDataP7IClientiPcx");
+    //static Symbol sym_BroadcastVoiceData = Symbol::FromName("_Z21SV_BroadcastVoiceDataP7IClientiPcx");
+    static symbol sym_BroadcastVoiceData = Symbol::FromSignature("\x55\x48\x8D\x05****\x48\x89\xE5\x41\x57\x41\x56\x41\x89\xF6\x41\x55\x49\x89\xFD\x41\x54\x49\x89\xD4\x53\x48\x89\xCB\x48\x81\xEC****\x48\x8B\x3D****\x48\x39\xC7\x74\x25");
 
     typedef int (* tGetPlayerSlot)( IClient * );
     tGetPlayerSlot fGetPlayerSlot = NULL;
