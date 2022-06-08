@@ -8,6 +8,7 @@
 #include <Platform.hpp>
 #include <steam/isteamclient.h>
 #include <steam/isteamuser.h>
+#include <unordered_map>
 
 #define MAX_PLAYERS		129
 
@@ -35,12 +36,7 @@ namespace global {
     HSteamUser g_hUser;
     ISteamUser* g_user;
 
-    struct VoicePlayer {
-        bool Enabled;
-        FILE* File;
-    }
-
-    std::hashmap<uint64_t, VoicePlayer> voicePlayers {};
+    std::unordered_map<uint64_t, FILE*> PlayerVoiceFileMap {};
     
 
     LUA_FUNCTION_STATIC(GetIntercepts)
@@ -59,32 +55,18 @@ namespace global {
         return static_cast<uint64_t>( LUA->GetNumber( -1 ) );
     }
 
-    LUA_FUNCTION_STATIC( Start )
+    LUA_FUNCTION_STATIC( End )
     {
         LUA->CheckType(1, GarrysMod::Lua::Type::Entity);
         int steamid = GetEntitySteamid64(LUA, 1);
 
-        
-
-        char fname[64];
-        sprintf(fname, "garrysmod/data/voicehook/%d.dat", index);
-        m_VoiceHookFiles[index] = fopen(fname, "ab");
-
-        hooking[index] = true;
-        return 0;
-    }
-
-    LUA_FUNCTION_STATIC( End )
-    {
-        LUA->CheckType(1, GarrysMod::Lua::Type::Entity);
-        int index = GetEntityIndex(LUA, 1);
-
-        hooking[index] = false;
-
-        if (m_VoiceHookFiles[index]) {
-            fclose(m_VoiceHookFiles[index]);
-            m_VoiceHookFiles[index] = NULL;
+        //
+        // fclose and remove
+        if (PlayerVoiceFileMap.find(steamid) != PlayerVoiceFileMap.end()) {
+            fclose(PlayerVoiceFileMap[steamid]);
+            PlayerVoiceFileMap.erase( steamid );
         }
+
 
         return 0;
     }
@@ -96,18 +78,23 @@ namespace global {
         intercepts++;
 
         #if defined ARCHITECTURE_X86
-		uint64_t playerslot = *(uint64_t*)((char*)cl + 181);
+		uint64_t playerslot = *(uint64_t*)((char*)pClient + 181);
         #else
-        uint64_t playerslot = *(uint64_t*)((char*)cl + 189);
+        uint64_t playerslot = *(uint64_t*)((char*)pClient + 189);
         #endif
         
-        if (pClient && nBytes && data) {
-            //int playerslot = fGetPlayerSlot(pClient);
-            if (!hooking[playerslot]) {
-                return;
-            }
+        // a function that returns 0
 
-            FILE* voicefile = m_VoiceHookFiles[playerslot];
+
+        if (pClient && nBytes && data) {
+            if (PlayerVoiceFileMap.find(playerslot) == PlayerVoiceFileMap.end()) {
+                char fname[64];
+                sprintf(fname, "garrysmod/data/voicehook/%ld.dat", playerslot);
+                PlayerVoiceFileMap[ playerslot ] = fopen(fname, "ab");
+            }
+            FILE* voice_file = PlayerVoiceFileMap[ playerslot ];
+
+
 
             int nVoiceBytes = nBytes;
             char *pVoiceData = data;
@@ -121,7 +108,7 @@ namespace global {
 
                 if ( res == k_EVoiceResultOK && numUncompressedBytes > 0 )
                 {
-                    fwrite(decompressed, 1, numUncompressedBytes, voicefile);
+                    fwrite(decompressed, 1, numUncompressedBytes, voice_file);
                 }
             }
         }
@@ -180,9 +167,6 @@ namespace global {
 		LUA->PushCFunction( GetIntercepts );
         LUA->SetField( -2, "InterceptCount" );
 
-		LUA->PushCFunction( Start );
-        LUA->SetField( -2, "Start" );
-
 		LUA->PushCFunction( End );
         LUA->SetField( -2, "End" );
 
@@ -201,14 +185,9 @@ GMOD_MODULE_OPEN()
 
 GMOD_MODULE_CLOSE( )
 {
-    for(auto & voicePlayer : voicePlayers) [
-        // if the filepointer isnt nullptr close it
-        if(voicePlayer.File != nullptr) {
-            fclose( voicePlayer.File );
-        }
-
-        voicePlayer.Enabled = false;
-    ]
+    for(auto & file : global::PlayerVoiceFileMap) {
+        fclose( file.second );
+    }
 
     global::stop(LUA);
 
