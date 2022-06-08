@@ -35,8 +35,13 @@ namespace global {
     HSteamUser g_hUser;
     ISteamUser* g_user;
 
-    bool hooking[MAX_PLAYERS];
-    FILE *m_VoiceHookFiles[MAX_PLAYERS];
+    struct VoicePlayer {
+        bool Enabled;
+        FILE* File;
+    }
+
+    std::hashmap<uint64_t, VoicePlayer> voicePlayers {};
+    
 
     LUA_FUNCTION_STATIC(GetIntercepts)
     {
@@ -44,20 +49,22 @@ namespace global {
         return 1;
     }
 
-    inline int GetEntityIndex( GarrysMod::Lua::ILuaBase *LUA, int i )
+    inline uint64_t GetEntitySteamid64( GarrysMod::Lua::ILuaBase *LUA, int i )
     {
         LUA->Push( i );
-        LUA->GetField( -1, "EntIndex" );
+        LUA->GetField( -1, "SteamID64" );
         LUA->Push( -2 );
         LUA->Call( 1, 1 );
 
-        return static_cast<int32_t>( LUA->GetNumber( -1 ) );
+        return static_cast<uint64_t>( LUA->GetNumber( -1 ) );
     }
 
     LUA_FUNCTION_STATIC( Start )
     {
         LUA->CheckType(1, GarrysMod::Lua::Type::Entity);
-        int index = GetEntityIndex(LUA, 1);
+        int steamid = GetEntitySteamid64(LUA, 1);
+
+        
 
         char fname[64];
         sprintf(fname, "garrysmod/data/voicehook/%d.dat", index);
@@ -87,9 +94,15 @@ namespace global {
     {
         bvd_hook.GetTrampoline<tBroadcastVoiceData>()(pClient, nBytes, data, xuid);
         intercepts++;
+
+        #if defined ARCHITECTURE_X86
+		uint64_t playerslot = *(uint64_t*)((char*)cl + 181);
+        #else
+        uint64_t playerslot = *(uint64_t*)((char*)cl + 189);
+        #endif
         
         if (pClient && nBytes && data) {
-            int playerslot = fGetPlayerSlot(pClient);
+            //int playerslot = fGetPlayerSlot(pClient);
             if (!hooking[playerslot]) {
                 return;
             }
@@ -137,14 +150,14 @@ namespace global {
 			LUA->ThrowError( "unable to create detour for BroadcastVoiceData" );
         bvd_hook.Enable();
 
-        fGetPlayerSlot = reinterpret_cast<tGetPlayerSlot>(symfinder.Resolve(
+        /*fGetPlayerSlot = reinterpret_cast<tGetPlayerSlot>(symfinder.Resolve(
             engine_loader.GetModule( ),
             sym_GetPlayerSlot.name.c_str( ),
             sym_GetPlayerSlot.length
         ));
         if (!fGetPlayerSlot) {
             LUA->ThrowError( "unable to find GetPlayerSlot" );
-        }
+        }*/
 
         SourceSDK::FactoryLoader* mod = new SourceSDK::FactoryLoader("steamclient");
         if (!mod->IsValid()) {
@@ -182,23 +195,20 @@ namespace global {
 }
 GMOD_MODULE_OPEN()
 {
-	for (int i = 0; i < MAX_PLAYERS; i++) {
-        global::m_VoiceHookFiles[i] = NULL;
-        global::hooking[i] = false;
-    }
-
     global::start(LUA);
 	return 0;
 }
 
 GMOD_MODULE_CLOSE( )
 {
-	for (int i = 0; i < MAX_PLAYERS; i++) {
-        if (global::m_VoiceHookFiles[i]) {
-            fclose(global::m_VoiceHookFiles[i]);
-            global::m_VoiceHookFiles[i] = NULL;
+    for(auto & voicePlayer : voicePlayers) [
+        // if the filepointer isnt nullptr close it
+        if(voicePlayer.File != nullptr) {
+            fclose( voicePlayer.File );
         }
-    }
+
+        voicePlayer.Enabled = false;
+    ]
 
     global::stop(LUA);
 
