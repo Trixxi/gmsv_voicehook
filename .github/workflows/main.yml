@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+        repository: danielga/garrysmod_common
+        ref: x86-64-support-sourcesdk
+        path: 'garrysmod_common'
+    - name: Install Premake
+      run: |
+        wget https://github.com/premake/premake-core/releases/download/v5.0.0-alpha15/premake-5.0.0-alpha15-linux.tar.gz -O premake.tar.gz
+        sudo tar -xvf premake.tar.gz --directory=/usr/bin
+        sudo apt-get update
+        sudo apt-get install g++-multilib
+        gcc --version
+    - name: Generate Project
+      run: |
+        premake5 --gmcommon=garrysmod_common gmake
+    - name: Make
+      run: |
+        cd projects/linux/gmake
+        make
+        make config=releasewithsymbols_x86_64
