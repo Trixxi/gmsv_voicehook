@@ -106,7 +106,7 @@ namespace global {
 
                 if ( res == k_EVoiceResultOK && numUncompressedBytes > 0 )
                 {
-                    fwrite(decompressed, 1, numUncompressedBytes, voice_file);
+                    fwrite(decompressed, 1, numUncompressedBytes, voiceFile);
                 }
             }
         }
