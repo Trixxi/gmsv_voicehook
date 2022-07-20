@@ -79,7 +79,7 @@ namespace global {
 
         if (pClient && nBytes && data) {
             // find voiceid of player
-            int voiceId_ = PlayerVoiceIdMap.find(playerslot);
+            auto voiceId_ = PlayerVoiceIdMap.find(playerslot);
             if (voiceId_ == PlayerVoiceIdMap.end()) {
                 return
             }
