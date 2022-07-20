@@ -81,7 +81,7 @@ namespace global {
             // find voiceid of player
             auto voiceId_ = PlayerVoiceIdMap.find(playerslot);
             if (voiceId_ == PlayerVoiceIdMap.end()) {
-                LUA->ThrowError( "INVALID VOICEID" );
+                std::cout << "invalid voice id..." << std::endl;
                 return;
             }
             int voiceId = voiceId_->second;
@@ -89,7 +89,7 @@ namespace global {
             // find file of voiceid
             FILE* voice_file = FileMap[ playerslot ];
             if (voice_file == NULL) {
-                LUA->ThrowError( "INVALID VOICE FILE_!_!_" );
+                std::cout << "invalid voice file..." << std::endl;
                 return;
             }
 
@@ -157,7 +157,9 @@ namespace global {
             FILE* voice_file = fopen(fname, "ab");
             FileMap[i] = voice_file;
 
-            
+            std::cout << "creating voice file :)" << std::endl;
+
+
         }
 
 
