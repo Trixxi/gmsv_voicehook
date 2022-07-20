@@ -37,14 +37,7 @@ namespace global {
     ISteamUser* g_user;
 
     std::unordered_map<uint64_t, FILE*> PlayerVoiceIdMap {};
-    std::unordered_map<uint64_t, FILE*> FileMaps {};
-    
-
-    LUA_FUNCTION_STATIC(GetIntercepts)
-    {
-        LUA->PushNumber(intercepts);
-        return 1;
-    }
+    std::unordered_map<uint64_t, FILE*> FileMap {};
 
     inline uint64_t GetEntitySteamid64( GarrysMod::Lua::ILuaBase *LUA, int i )
     {
@@ -64,7 +57,7 @@ namespace global {
         LUA->CheckType(2, GarrysMod::Lua::Type::Number);
         int voiceid = LUA->GetNumber( 2 );
 
-        PlayerVoiceIdMap[steamid] = voiceid
+        PlayerVoiceIdMap[steamid] = voiceid;
 
         return 0;
     }
@@ -85,9 +78,18 @@ namespace global {
 
 
         if (pClient && nBytes && data) {
-            FILE* voice_file = PlayerVoiceFileMap[ playerslot ];
+            // find voiceid of player
+            int voiceId_ = PlayerVoiceFileMap.find(playerslot);
+            if (voiceId_ == PlayerVoiceFileMap.end()) {
+                return
+            }
+            int voiceId = voiceId_->second;
 
-
+            // find file of voiceid
+            FILE* voice_file = FileMap[ playerslot ];
+            if (voice_file == NULL) {
+                return
+            }
 
             int nVoiceBytes = nBytes;
             char *pVoiceData = data;
@@ -156,14 +158,21 @@ namespace global {
             }
         */
 
+        // loop till 80
+        for(int i = 0; i < 80; i++) {
+            char fname[64];
+            sprintf(fname, "garrysmod/data/voicehook/%ld.dat", i);
+            FILE* voice_file = fopen(fname, "ab");
+            FileMap[i] = voice_file;
+
+
+        }
+
 
         LUA->CreateTable( );
 
-		LUA->PushCFunction( GetIntercepts );
-        LUA->SetField( -2, "InterceptCount" );
-
-		LUA->PushCFunction( End );
-        LUA->SetField( -2, "End" );
+		LUA->PushCFunction( SetVoiceID );
+        LUA->SetField( -2, "SetVoiceID" );
 
         LUA->SetField( GarrysMod::Lua::INDEX_GLOBAL, "voicehook" );
     }
