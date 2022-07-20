@@ -45,7 +45,7 @@ namespace global {
         const char* steamid_string = LUA->GetString( 1 );
 
         // convert to 64bit number
-        uint64_t steamid = stoi(steamid_string);
+        uint64_t steamid = std::stoi(steamid_string);
 
 
         LUA->CheckType(2, GarrysMod::Lua::Type::Number);
