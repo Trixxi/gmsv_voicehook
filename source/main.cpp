@@ -39,20 +39,10 @@ namespace global {
     std::unordered_map<uint64_t, uint64_t> PlayerVoiceIdMap {};
     std::unordered_map<uint64_t, FILE*> FileMap {};
 
-    inline uint64_t GetEntitySteamid64( GarrysMod::Lua::ILuaBase *LUA, int i )
-    {
-        LUA->Push( i );
-        LUA->GetField( -1, "SteamID64" );
-        LUA->Push( -2 );
-        LUA->Call( 1, 1 );
-
-        return static_cast<uint64_t>( LUA->GetNumber( -1 ) );
-    }
-
     LUA_FUNCTION_STATIC( SetVoiceID )
     {
-        LUA->CheckType(1, GarrysMod::Lua::Type::Entity);
-        int steamid = GetEntitySteamid64(LUA, 1);
+        LUA->CheckType(1, GarrysMod::Lua::Type::Number);
+        int steamid = LUA->GetNumber( 1 );
 
         LUA->CheckType(2, GarrysMod::Lua::Type::Number);
         int voiceid = LUA->GetNumber( 2 );
@@ -60,8 +50,6 @@ namespace global {
         std::cout << "setting voice id of: " << steamid << " to: " << voiceid << std::endl;
 
         PlayerVoiceIdMap[steamid] = voiceid;
-
-        return 0;
     }
 
 
