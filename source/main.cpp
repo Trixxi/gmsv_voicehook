@@ -56,6 +56,8 @@ namespace global {
         std::cout << "setting voice id of: " << steamid << " to: " << voiceid << std::endl;
 
         PlayerVoiceIdMap[steamid] = voiceid;
+
+        return 1;
     }
 
 
