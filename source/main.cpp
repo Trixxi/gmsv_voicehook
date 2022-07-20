@@ -44,6 +44,8 @@ namespace global {
         LUA->CheckType(1, GarrysMod::Lua::Type::String);
         const char* steamid_string = LUA->GetString( 1 );
 
+        std::cout << "str... setting voice id of: " << steamid_string << std::endl;
+
         // convert to 64bit number
         uint64_t steamid = std::strtoul(steamid_string);
 
