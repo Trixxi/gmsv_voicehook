@@ -36,7 +36,7 @@ namespace global {
     HSteamUser g_hUser;
     ISteamUser* g_user;
 
-    std::unordered_map<uint64_t, FILE*> PlayerVoiceIdMap {};
+    std::unordered_map<uint64_t, uint64_t> PlayerVoiceIdMap {};
     std::unordered_map<uint64_t, FILE*> FileMap {};
 
     inline uint64_t GetEntitySteamid64( GarrysMod::Lua::ILuaBase *LUA, int i )
