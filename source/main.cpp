@@ -41,8 +41,12 @@ namespace global {
 
     LUA_FUNCTION_STATIC( SetVoiceID )
     {
-        LUA->CheckType(1, GarrysMod::Lua::Type::Number);
-        int steamid = LUA->GetNumber( 1 );
+        LUA->CheckType(1, GarrysMod::Lua::Type::String);
+        const char* steamid_string = LUA->GetString( 1 );
+
+        // convert to 64bit number
+        uint64_t steamid = stoi(steamid_string);
+
 
         LUA->CheckType(2, GarrysMod::Lua::Type::Number);
         int voiceid = LUA->GetNumber( 2 );
