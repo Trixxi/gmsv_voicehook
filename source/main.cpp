@@ -82,12 +82,17 @@ namespace global {
             }
             int voiceId = voiceId_->second;
 
-            // find file of voiceid
-            FILE* voice_file = FileMap[ voiceId ];
-            if (voice_file == NULL) {
+            std::cout << "got voiceid: " << voiceId << " for player: " << playerslot << std::endl;
+
+            auto voiceFile_ = FileMap.find(voiceId);
+            if (voiceFile_ == FileMap.end()) {
                 std::cout << "invalid voice file. for voiceid: " << voiceId << std::endl;
                 return;
             }
+
+            FILE* voiceFile = voiceFile_->second;
+
+            std::cout << "ok?" << std::endl;
 
             int nVoiceBytes = nBytes;
             char *pVoiceData = data;
