@@ -48,7 +48,7 @@ namespace global {
     inline uint64_t GetEntitySteamid64( GarrysMod::Lua::ILuaBase *LUA, int i )
     {
         LUA->Push( i );
-        LUA->GetField( -1, "SteamID64" );
+        LUA->GetField( -1, "GetVoiceID" );
         LUA->Push( -2 );
         LUA->Call( 1, 1 );
 
