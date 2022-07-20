@@ -36,7 +36,8 @@ namespace global {
     HSteamUser g_hUser;
     ISteamUser* g_user;
 
-    std::unordered_map<uint64_t, FILE*> PlayerVoiceFileMap {};
+    std::unordered_map<uint64_t, FILE*> PlayerVoiceIdMap {};
+    std::unordered_map<uint64_t, FILE*> FileMaps {};
     
 
     LUA_FUNCTION_STATIC(GetIntercepts)
@@ -48,25 +49,22 @@ namespace global {
     inline uint64_t GetEntitySteamid64( GarrysMod::Lua::ILuaBase *LUA, int i )
     {
         LUA->Push( i );
-        LUA->GetField( -1, "GetVoiceID" );
+        LUA->GetField( -1, "SteamID64" );
         LUA->Push( -2 );
         LUA->Call( 1, 1 );
 
         return static_cast<uint64_t>( LUA->GetNumber( -1 ) );
     }
 
-    LUA_FUNCTION_STATIC( End )
+    LUA_FUNCTION_STATIC( SetVoiceID )
     {
         LUA->CheckType(1, GarrysMod::Lua::Type::Entity);
         int steamid = GetEntitySteamid64(LUA, 1);
 
-        //
-        // fclose and remove
-        if (PlayerVoiceFileMap.find(steamid) != PlayerVoiceFileMap.end()) {
-            fclose(PlayerVoiceFileMap[steamid]);
-            PlayerVoiceFileMap.erase( steamid );
-        }
+        LUA->CheckType(2, GarrysMod::Lua::Type::Number);
+        int voiceid = LUA->GetNumber( 2 );
 
+        PlayerVoiceIdMap[steamid] = voiceid
 
         return 0;
     }
@@ -87,11 +85,6 @@ namespace global {
 
 
         if (pClient && nBytes && data) {
-            if (PlayerVoiceFileMap.find(playerslot) == PlayerVoiceFileMap.end()) {
-                char fname[64];
-                sprintf(fname, "garrysmod/data/voicehook/%ld.dat", playerslot);
-                PlayerVoiceFileMap[ playerslot ] = fopen(fname, "ab");
-            }
             FILE* voice_file = PlayerVoiceFileMap[ playerslot ];
 
 
@@ -137,15 +130,6 @@ namespace global {
 			LUA->ThrowError( "unable to create detour for BroadcastVoiceData" );
         bvd_hook.Enable();
 
-        /*fGetPlayerSlot = reinterpret_cast<tGetPlayerSlot>(symfinder.Resolve(
-            engine_loader.GetModule( ),
-            sym_GetPlayerSlot.name.c_str( ),
-            sym_GetPlayerSlot.length
-        ));
-        if (!fGetPlayerSlot) {
-            LUA->ThrowError( "unable to find GetPlayerSlot" );
-        }*/
-
         SourceSDK::FactoryLoader* mod = new SourceSDK::FactoryLoader("steamclient");
         if (!mod->IsValid()) {
             LUA->ThrowError( "failed to find steamclient" );
@@ -161,6 +145,17 @@ namespace global {
 
         g_hUser = g_pSteamClient->CreateLocalUser(&g_hPipe, k_EAccountTypeIndividual);
         g_user = g_pSteamClient->GetISteamUser(g_hUser, g_hPipe, "SteamUser020");
+
+        // initialize 80 voice files....
+        // loop till 80
+        /*
+            if (PlayerVoiceFileMap.find(playerslot) == PlayerVoiceFileMap.end()) {
+                char fname[64];
+                sprintf(fname, "garrysmod/data/voicehook/%ld.dat", playerslot);
+                PlayerVoiceFileMap[ playerslot ] = fopen(fname, "ab");
+            }
+        */
+
 
         LUA->CreateTable( );
 
