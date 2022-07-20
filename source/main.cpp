@@ -81,14 +81,14 @@ namespace global {
             // find voiceid of player
             auto voiceId_ = PlayerVoiceIdMap.find(playerslot);
             if (voiceId_ == PlayerVoiceIdMap.end()) {
-                return
+                return;
             }
             int voiceId = voiceId_->second;
 
             // find file of voiceid
             FILE* voice_file = FileMap[ playerslot ];
             if (voice_file == NULL) {
-                return
+                return;
             }
 
             int nVoiceBytes = nBytes;
