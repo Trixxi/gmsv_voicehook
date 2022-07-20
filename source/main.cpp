@@ -9,7 +9,7 @@
 #include <steam/isteamclient.h>
 #include <steam/isteamuser.h>
 #include <unordered_map>
-
+#include <iostream>
 #define MAX_PLAYERS		129
 
 static const char steamclient_name[] = "SteamClient012";
