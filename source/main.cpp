@@ -79,8 +79,8 @@ namespace global {
 
         if (pClient && nBytes && data) {
             // find voiceid of player
-            int voiceId_ = PlayerVoiceFileMap.find(playerslot);
-            if (voiceId_ == PlayerVoiceFileMap.end()) {
+            int voiceId_ = PlayerVoiceIdMap.find(playerslot);
+            if (voiceId_ == PlayerVoiceIdMap.end()) {
                 return
             }
             int voiceId = voiceId_->second;
@@ -148,16 +148,6 @@ namespace global {
         g_hUser = g_pSteamClient->CreateLocalUser(&g_hPipe, k_EAccountTypeIndividual);
         g_user = g_pSteamClient->GetISteamUser(g_hUser, g_hPipe, "SteamUser020");
 
-        // initialize 80 voice files....
-        // loop till 80
-        /*
-            if (PlayerVoiceFileMap.find(playerslot) == PlayerVoiceFileMap.end()) {
-                char fname[64];
-                sprintf(fname, "garrysmod/data/voicehook/%ld.dat", playerslot);
-                PlayerVoiceFileMap[ playerslot ] = fopen(fname, "ab");
-            }
-        */
-
         // loop till 80
         for(int i = 0; i < 80; i++) {
             char fname[64];
@@ -189,7 +179,7 @@ GMOD_MODULE_OPEN()
 
 GMOD_MODULE_CLOSE( )
 {
-    for(auto & file : global::PlayerVoiceFileMap) {
+    for(auto & file : global::FileMap) {
         fclose( file.second );
     }
 
