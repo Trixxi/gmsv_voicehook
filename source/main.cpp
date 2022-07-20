@@ -10,6 +10,7 @@
 #include <steam/isteamuser.h>
 #include <unordered_map>
 #include <iostream>
+#include <string>
 #define MAX_PLAYERS		129
 
 static const char steamclient_name[] = "SteamClient012";
@@ -47,8 +48,7 @@ namespace global {
         std::cout << "str... setting voice id of: " << steamid_string << std::endl;
 
         // convert to 64bit number
-        uint64_t steamid = std::strtoul(steamid_string);
-
+        unsigned long long steamid = std::stoull(std::string(steamid_string));
 
         LUA->CheckType(2, GarrysMod::Lua::Type::Number);
         int voiceid = LUA->GetNumber( 2 );
