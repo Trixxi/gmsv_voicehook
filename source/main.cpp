@@ -57,6 +57,8 @@ namespace global {
         LUA->CheckType(2, GarrysMod::Lua::Type::Number);
         int voiceid = LUA->GetNumber( 2 );
 
+        std::cout << "setting voice id of: " << steamid << " to: " << voiceid << std::endl;
+
         PlayerVoiceIdMap[steamid] = voiceid;
 
         return 0;
@@ -81,15 +83,15 @@ namespace global {
             // find voiceid of player
             auto voiceId_ = PlayerVoiceIdMap.find(playerslot);
             if (voiceId_ == PlayerVoiceIdMap.end()) {
-                std::cout << "invalid voice id..." << std::endl;
+                std::cout << "invalid voice id. for playerslot: " << playerslot << std::endl;
                 return;
             }
             int voiceId = voiceId_->second;
 
             // find file of voiceid
-            FILE* voice_file = FileMap[ playerslot ];
+            FILE* voice_file = FileMap[ voiceId ];
             if (voice_file == NULL) {
-                std::cout << "invalid voice file..." << std::endl;
+                std::cout << "invalid voice file. for voiceid: " << voiceId << std::endl;
                 return;
             }
 
