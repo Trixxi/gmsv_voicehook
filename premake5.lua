@@ -1,6 +1,6 @@
 newoption({
 	trigger = "gmcommon",
-	description = "Sets the path to the garrysmod_common (https://github.com/danielga/garrysmod_common) directory g",
+	description = "Sets the path to the garrysmod_common (https://github.com/danielga/garrysmod_common) directory",
 	value = "path to garrysmod_common directory"
 })
 
