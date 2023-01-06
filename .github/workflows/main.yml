@@ -13,6 +13,7 @@ jobs:
       with:
         submodules: recursive
         repository: danielga/garrysmod_common
+        commit: 71b56443b33940ea3704db92bed9c0666838d9d7
         ref: x86-64-support-sourcesdk
         path: 'garrysmod_common'
     - name: Install Premake
